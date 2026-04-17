@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-dark: #002244;
+  --color-panel: rgba(17, 68, 102, 0.9);
+  --color-accent: #00f2ff;
+  --color-warn: #ffbb00;
+  --color-header-bg: #001122;
+  --font-sans: 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+  background-color: var(--color-bg-dark);
+  color: #ffffff;
+  background-image: radial-gradient(circle at center, #004466 0%, #001122 100%);
+  background-size: cover;
+  background-attachment: fixed;
+}
