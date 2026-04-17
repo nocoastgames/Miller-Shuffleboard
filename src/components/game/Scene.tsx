@@ -1,7 +1,7 @@
 import { Physics } from '@react-three/cannon';
 import { PerspectiveCamera, Sky, Billboard } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { Vector3, Group, CanvasTexture } from 'three';
 import { useStore } from '../../store';
 import { Puck, PuckRef } from './Puck';
@@ -11,19 +11,18 @@ import { audioEngine } from '../../lib/audio';
 function SpriteIsland({ position, scale = 1 }: { position: [number, number, number], scale?: number }) {
   const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
+    canvas.width = 1024;
+    canvas.height = 1024;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.font = '200px serif';
+      ctx.font = '800px serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      // Draw a subtle shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.fillText('🏝️', 128 + 5, 128 + 15);
-      ctx.fillText('🏝️', 128, 128);
+      ctx.fillText('🏝️', 512, 512);
     }
-    return new CanvasTexture(canvas);
+    const tex = new CanvasTexture(canvas);
+    tex.anisotropy = 16;
+    return tex;
   }, []);
 
   return (
@@ -36,26 +35,137 @@ function SpriteIsland({ position, scale = 1 }: { position: [number, number, numb
   );
 }
 
+function SeagullSprite({ startZ, speed }: { startZ: number, speed: number }) {
+  const groupRef = useRef<Group>(null);
+  const [initX] = useState(() => -100 + Math.random() * 200);
+  const [initY] = useState(() => 8 + Math.random() * 5);
+
+  const texture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.font = '300px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🕊️', 256, 256);
+    }
+    const tex = new CanvasTexture(canvas);
+    tex.anisotropy = 16;
+    return tex;
+  }, []);
+
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      groupRef.current.position.x += speed * delta;
+      // Loop around
+      if (groupRef.current.position.x > 100) {
+        groupRef.current.position.x = -100;
+        groupRef.current.position.y = 8 + Math.random() * 5;
+      }
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={[initX, initY, startZ]}>
+       <Billboard follow={true}>
+         <mesh>
+           <planeGeometry args={[4, 4]} />
+           <meshBasicMaterial map={texture} transparent alphaTest={0.1} />
+         </mesh>
+       </Billboard>
+    </group>
+  );
+}
+
+function CloudSprite({ startX, startZ, scale }: { startX: number, startZ: number, scale: number }) {
+  const [initY] = useState(() => 15 + Math.random() * 5);
+  const texture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      // Draw super white fluffy clouds with circles
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(512, 600, 250, 0, Math.PI * 2);
+      ctx.arc(350, 500, 200, 0, Math.PI * 2);
+      ctx.arc(700, 500, 220, 0, Math.PI * 2);
+      ctx.arc(450, 400, 180, 0, Math.PI * 2);
+      ctx.arc(600, 420, 150, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const tex = new CanvasTexture(canvas);
+    tex.anisotropy = 16;
+    return tex;
+  }, []);
+
+  return (
+    <group position={[startX, initY, startZ]}>
+       <Billboard follow={true}>
+         <mesh>
+           <planeGeometry args={[scale * 10, scale * 10]} />
+           <meshBasicMaterial map={texture} transparent alphaTest={0.1} />
+         </mesh>
+       </Billboard>
+    </group>
+  );
+}
+
+function SunSprite() {
+  const texture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const gradient = ctx.createRadialGradient(512, 512, 50, 512, 512, 512);
+      gradient.addColorStop(0, '#ffffcc'); // bright hot center
+      gradient.addColorStop(0.3, '#ffcc00'); // yellow sun
+      gradient.addColorStop(1, 'rgba(255, 200, 0, 0)'); // glowing fade to transparent
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(512, 512, 512, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const tex = new CanvasTexture(canvas);
+    tex.anisotropy = 16;
+    return tex;
+  }, []);
+
+  return (
+    // Put it way up high and far away to mimic the sky's sun position
+    <group position={[80, 40, 80]}>
+       <Billboard follow={true}>
+         <mesh>
+           <planeGeometry args={[100, 100]} />
+           <meshBasicMaterial map={texture} transparent depthWrite={false} color="#ffe" />
+         </mesh>
+       </Billboard>
+    </group>
+  );
+}
+
 function AimGuide() {
   const groupRef = useRef<Group>(null);
   const pivotRef = useRef<Group>(null);
 
   const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
+    canvas.width = 1024;
+    canvas.height = 1024;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.font = '150px serif';
+      ctx.font = '600px serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      // Shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.fillText('⚓', 128, 128 + 10);
-      // Actual emoji
-      ctx.fillText('⚓', 128, 128);
+      ctx.fillText('⚓', 512, 512);
     }
-    return new CanvasTexture(canvas);
+    const tex = new CanvasTexture(canvas);
+    tex.anisotropy = 16;
+    return tex;
   }, []);
 
   useFrame(() => {
@@ -208,6 +318,8 @@ export function Scene() {
       <Sky sunPosition={[100, 20, 100]} />
       <fog attach="fog" args={['#87CEEB', 20, 100]} />
       
+      <SunSprite />
+
       <ambientLight intensity={0.6} />
       <directionalLight position={[10, 20, 5]} intensity={1.5} castShadow />
       
@@ -224,6 +336,18 @@ export function Scene() {
       <SpriteIsland position={[18, 0, 12]} scale={1.8} />
       <SpriteIsland position={[-10, 0, -30]} scale={1.2} />
       <SpriteIsland position={[12, -1, -40]} scale={4} />
+
+      {/* Flocks of Seagulls */}
+      <SeagullSprite startZ={0} speed={4} />
+      <SeagullSprite startZ={-20} speed={6} />
+      <SeagullSprite startZ={-40} speed={5} />
+
+      {/* Moving Fluffy Clouds */}
+      <CloudSprite startX={-30} startZ={-10} scale={1.5} />
+      <CloudSprite startX={10} startZ={-30} scale={2} />
+      <CloudSprite startX={-60} startZ={-50} scale={3} />
+      <CloudSprite startX={80} startZ={10} scale={1.2} />
+      <CloudSprite startX={40} startZ={-20} scale={1.8} />
 
       <AimGuide />
 
