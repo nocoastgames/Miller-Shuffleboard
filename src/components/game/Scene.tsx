@@ -1,8 +1,8 @@
 import { Physics } from '@react-three/cannon';
 import { PerspectiveCamera, Sky, Billboard } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useRef, useMemo, useState } from 'react';
-import { Vector3, Group, CanvasTexture } from 'three';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
+import { Vector3, Group, CanvasTexture, Color, Mesh } from 'three';
 import { useStore } from '../../store';
 import { Puck, PuckRef } from './Puck';
 import { Board, BOARD_LENGTH, BOARD_WIDTH, getScorePoint } from './Board';
