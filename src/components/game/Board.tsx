@@ -1,9 +1,44 @@
 import { useBox } from '@react-three/cannon';
 import { Text } from '@react-three/drei';
+import { useStore } from '../../store';
 
 export const BOARD_LENGTH = 30;
 export const BOARD_WIDTH = 3;
 export const GUTTER_WIDTH = 1.0; 
+
+function GutterBumpers({ outerLength }: { outerLength: number }) {
+  const leftX = -(BOARD_WIDTH / 2) - (GUTTER_WIDTH / 2);
+  const rightX = (BOARD_WIDTH / 2) + (GUTTER_WIDTH / 2);
+  const yOffset = 0.1;
+  const width = GUTTER_WIDTH - 0.1;
+
+  useBox(() => ({
+    type: 'Static',
+    args: [width, 0.4, outerLength],
+    position: [leftX, yOffset, 0],
+    material: { friction: 0.1, restitution: 0.6 } // Bouncy
+  }));
+
+  useBox(() => ({
+    type: 'Static',
+    args: [width, 0.4, outerLength],
+    position: [rightX, yOffset, 0],
+    material: { friction: 0.1, restitution: 0.6 }
+  }));
+
+  return (
+    <group>
+      <mesh position={[leftX, yOffset, 0]} receiveShadow castShadow={false}>
+        <boxGeometry args={[width, 0.4, outerLength]} />
+        <meshStandardMaterial color="#cc2222" roughness={0.6} />
+      </mesh>
+      <mesh position={[rightX, yOffset, 0]} receiveShadow castShadow={false}>
+        <boxGeometry args={[width, 0.4, outerLength]} />
+        <meshStandardMaterial color="#cc2222" roughness={0.6} />
+      </mesh>
+    </group>
+  );
+}
 
 export function getScorePoint(pos: [number, number, number]): number {
   const [x, y, z] = pos;
@@ -24,6 +59,8 @@ export function getScorePoint(pos: [number, number, number]): number {
 }
 
 export function Board() {
+  const bumpersEnabled = useStore(state => state.bumpersEnabled);
+
   // Main Board Deck
   const [ref] = useBox(() => ({
     type: 'Static',
@@ -72,10 +109,10 @@ export function Board() {
         <meshStandardMaterial color="#c29f6d" roughness={0.6} />
       </mesh>
 
-      {/* Gutter Floor (Red 10-Off Visual) */}
+      {/* Gutter Floor */}
       <mesh position={[0, gutterFloorY, 0]} receiveShadow>
         <boxGeometry args={[outerWidth, 0.1, outerLength]} />
-        <meshStandardMaterial color="#aa2222" roughness={0.8} />
+        <meshStandardMaterial color="#cc2222" roughness={0.8} metalness={0.1} />
       </mesh>
 
       {/* Puck Waiting Shelf (hidden far away) */}
@@ -91,7 +128,7 @@ export function Board() {
           <planeGeometry args={[BOARD_WIDTH, 6]} />
           <meshStandardMaterial color="#aa22aa" opacity={0.6} transparent />
         </mesh>
-        <Text position={[0, 0.05, -1]} rotation={[-Math.PI / 2, 0, 0]} {...textProps}>
+        <Text position={[0, 0.01, -1]} rotation={[-Math.PI / 2, 0, 0]} {...textProps}>
           7
         </Text>
 
@@ -100,7 +137,7 @@ export function Board() {
           <planeGeometry args={[BOARD_WIDTH, 5]} />
           <meshStandardMaterial color="#2222aa" opacity={0.6} transparent />
         </mesh>
-        <Text position={[0, 0.05, -6.5]} rotation={[-Math.PI / 2, 0, 0]} {...textProps}>
+        <Text position={[0, 0.01, -6.5]} rotation={[-Math.PI / 2, 0, 0]} {...textProps}>
           8
         </Text>
 
@@ -109,25 +146,27 @@ export function Board() {
           <planeGeometry args={[BOARD_WIDTH, 4]} />
           <meshStandardMaterial color="#22aa22" opacity={0.6} transparent />
         </mesh>
-        <Text position={[0, 0.05, -11]} rotation={[-Math.PI / 2, 0, 0]} {...textProps}>
+        <Text position={[0, 0.01, -11]} rotation={[-Math.PI / 2, 0, 0]} {...textProps}>
           10
         </Text>
       </group>
 
       {/* Side Rails Visual */}
-      <mesh position={[-outerWidth/2 - 0.1, 0.1, 0]} receiveShadow castShadow>
+      {bumpersEnabled && <GutterBumpers outerLength={outerLength} />}
+
+      <mesh position={[-outerWidth/2 - 0.1, 0.1, 0]} receiveShadow castShadow={false}>
         <boxGeometry args={[0.2, 0.6, outerLength]} />
         <meshStandardMaterial color="#ffffff" />
       </mesh>
-      <mesh position={[outerWidth/2 + 0.1, 0.1, 0]} receiveShadow castShadow>
+      <mesh position={[outerWidth/2 + 0.1, 0.1, 0]} receiveShadow castShadow={false}>
         <boxGeometry args={[0.2, 0.6, outerLength]} />
         <meshStandardMaterial color="#ffffff" />
       </mesh>
-      <mesh position={[0, 0.1, -outerLength/2 - 0.1]} receiveShadow castShadow>
+      <mesh position={[0, 0.1, -outerLength/2 - 0.1]} receiveShadow castShadow={false}>
         <boxGeometry args={[outerWidth + 0.4, 0.6, 0.2]} />
         <meshStandardMaterial color="#ffffff" />
       </mesh>
-      <mesh position={[0, 0.1, outerLength/2 + 0.1]} receiveShadow castShadow>
+      <mesh position={[0, 0.1, outerLength/2 + 0.1]} receiveShadow castShadow={false}>
         <boxGeometry args={[outerWidth + 0.4, 0.6, 0.2]} />
         <meshStandardMaterial color="#ffffff" />
       </mesh>

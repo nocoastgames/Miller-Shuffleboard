@@ -27,6 +27,12 @@ export function calculateTotalScore(frames: Frame[], totalFrames: number = 10) {
   return score;
 }
 
+export interface GameEffect {
+  id: string;
+  type: 'spark' | 'splash' | 'confetti';
+  position: [number, number, number];
+}
+
 interface ShuffleboardStore {
   gameState: GameState;
   setGameState: (state: GameState) => void;
@@ -57,6 +63,9 @@ interface ShuffleboardStore {
   masterVolume: number;
   setMasterVolume: (volume: number) => void;
 
+  bumpersEnabled: boolean;
+  setBumpersEnabled: (enabled: boolean) => void;
+
   playState: PlayState;
   setPlayState: (state: PlayState) => void;
   
@@ -67,8 +76,13 @@ interface ShuffleboardStore {
   scoreThisThrow: number;
   setScoreThisThrow: (score: number) => void;
 
+  effects: GameEffect[];
+  addEffect: (type: 'spark' | 'splash' | 'confetti', position: [number, number, number]) => void;
+  removeEffect: (id: string) => void;
+
   startGame: (singlePlayerName?: string) => void;
   advanceThrow: (scoreThisThrow: number) => void;
+  undoLastPuck: () => void;
   resetGame: () => void;
 }
 
@@ -102,6 +116,9 @@ export const useStore = create<ShuffleboardStore>((set, get) => ({
   masterVolume: 0.5,
   setMasterVolume: (volume) => set({ masterVolume: volume }),
 
+  bumpersEnabled: false,
+  setBumpersEnabled: (enabled) => set({ bumpersEnabled: enabled }),
+
   playState: 'idle',
   setPlayState: (state) => set({ playState: state }),
   aimAngle: 0,
@@ -110,6 +127,14 @@ export const useStore = create<ShuffleboardStore>((set, get) => ({
   setPowerLevel: (power) => set({ powerLevel: power }),
   scoreThisThrow: 0,
   setScoreThisThrow: (score) => set({ scoreThisThrow: score }),
+
+  effects: [],
+  addEffect: (type, position) => set((state) => ({ 
+    effects: [...state.effects, { id: Math.random().toString(36).substring(2), type, position }] 
+  })),
+  removeEffect: (id) => set((state) => ({
+    effects: state.effects.filter(e => e.id !== id)
+  })),
 
   startGame: (singlePlayerName) => {
     const state = get();
@@ -199,6 +224,22 @@ export const useStore = create<ShuffleboardStore>((set, get) => ({
              set({ currentFrame: nextFrameContext, currentPuckIndex: 0, teacherAdvancePending: false, playState: 'aiming', aimAngle: 0, powerLevel: 0 });
          }
      }
+  },
+
+  undoLastPuck: () => {
+    const state = get();
+    // Only allow undo if we've thrown at least one puck in the current frame and we're not currently rolling
+    if (state.currentPuckIndex > 0 && (state.playState === 'idle' || state.playState === 'aiming' || state.playState === 'scoring' || state.playState === 'power')) {
+      const prevIndex = state.currentPuckIndex - 1;
+      set({ 
+        currentPuckIndex: prevIndex,
+        playState: 'aiming',
+        aimAngle: 0,
+        powerLevel: 0,
+        scoreThisThrow: 0,
+        teacherAdvancePending: false // Cancel any end round sequences 
+      });
+    }
   },
 
   resetGame: () => set({

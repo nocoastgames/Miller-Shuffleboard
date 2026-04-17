@@ -2,7 +2,19 @@ import { useState } from 'react';
 import { useStore } from '../../store';
 
 export function TournamentSetup() {
-  const { gameMode, players, addPlayer, removePlayer, startGame, setGameState, totalRounds, setTotalRounds } = useStore();
+  const gameMode = useStore(s => s.gameMode);
+  const players = useStore(s => s.players);
+  const addPlayer = useStore(s => s.addPlayer);
+  const removePlayer = useStore(s => s.removePlayer);
+  const startGame = useStore(s => s.startGame);
+  const setGameState = useStore(s => s.setGameState);
+  
+  const totalRounds = useStore(s => s.totalRounds);
+  const setTotalRounds = useStore(s => s.setTotalRounds);
+  
+  const bumpersEnabled = useStore(s => s.bumpersEnabled);
+  const setBumpersEnabled = useStore(s => s.setBumpersEnabled);
+  
   const [name, setName] = useState('');
 
   const handleAdd = (e?: React.FormEvent) => {
@@ -55,16 +67,31 @@ export function TournamentSetup() {
               </button>
             </form>
 
-            <div className="mt-6 flex flex-col gap-2">
-              <label className="text-xl font-medium">Number of Pucks (Rounds): {totalRounds}</label>
-              <input 
-                type="range" 
-                min="1" 
-                max="10" 
-                value={totalRounds}
-                onChange={(e) => setTotalRounds(parseInt(e.target.value))}
-                className="w-full accent-accent"
-              />
+            <div className="mt-8 flex flex-col gap-3">
+              <label className="text-xl font-medium">Number of Frames (Rounds)</label>
+              <div className="flex gap-2">
+                {[1, 4, 8, 10, 20].map(r => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setTotalRounds(r)}
+                    className={`flex-1 py-3 rounded font-bold text-xl transition-colors shadow ${totalRounds === r ? 'bg-accent text-[#002244]' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 p-4 rounded border border-white/20 shadow-inner bg-[#002244] flex items-center justify-between">
+              <label className="text-xl font-medium">Gutter Bumpers (Easier)</label>
+              <button 
+                 type="button"
+                 onClick={() => setBumpersEnabled(!bumpersEnabled)}
+                 className={`w-16 h-8 rounded-full transition-colors relative shadow ${bumpersEnabled ? 'bg-accent' : 'bg-slate-600'}`}
+              >
+                 <div className={`absolute top-1 bottom-1 w-6 bg-white rounded-full transition-all shadow-md ${bumpersEnabled ? 'left-9' : 'left-1'}`} />
+              </button>
             </div>
 
             {gameMode === 'class' && (

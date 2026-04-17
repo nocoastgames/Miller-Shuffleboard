@@ -6,7 +6,7 @@ import { audioEngine } from '../../lib/audio';
 import { Volume2, VolumeX } from 'lucide-react';
 
 export function GameplayOverlay() {
-  const { playState, setPlayState, aimAngle, setAimAngle, powerLevel, setPowerLevel, sweepSpeed, gameMode, currentFrame, totalRounds, playerFrames, players, currentPlayerIndex, currentPuckIndex, teacherAdvancePending, nextTurnAfterTeacher, masterVolume, setMasterVolume } = useStore();
+  const { playState, setPlayState, aimAngle, setAimAngle, powerLevel, setPowerLevel, sweepSpeed, gameMode, currentFrame, totalRounds, playerFrames, players, currentPlayerIndex, currentPuckIndex, teacherAdvancePending, nextTurnAfterTeacher, masterVolume, setMasterVolume, bumpersEnabled } = useStore();
   
   const [localAim, setLocalAim] = useState(0);
   const [localPower, setLocalPower] = useState(0);
@@ -43,12 +43,13 @@ export function GameplayOverlay() {
       lastTime = time;
       
       if (playState === 'aiming') {
-        let next = localAimRef.current + (delta * 0.5 * sweepSpeed * aimDir.current);
-        if (next > 0.3) {
-          next = 0.3;
+        const maxAngle = bumpersEnabled ? 0.2 : 0.35; // Widened sweep angle
+        let next = localAimRef.current + (delta * 0.4 * sweepSpeed * aimDir.current);
+        if (next > maxAngle) {
+          next = maxAngle;
           aimDir.current = -1;
-        } else if (next < -0.3) {
-          next = -0.3;
+        } else if (next < -maxAngle) {
+          next = -maxAngle;
           aimDir.current = 1;
         }
         localAimRef.current = next;
@@ -131,19 +132,7 @@ export function GameplayOverlay() {
       {/* Top Bar */}
       <header className="h-[80px] bg-gradient-to-b from-header-bg to-transparent flex justify-between items-center px-10 z-10 pointer-events-auto">
         <div className="flex gap-5">
-          {/* Volume Control */}
-          <div className="bg-panel border-l-4 border-white px-5 py-2.5 rounded flex items-center gap-3">
-             <button onClick={() => setMasterVolume(masterVolume === 0 ? 0.5 : 0)} className="text-white hover:text-accent">
-                {masterVolume === 0 ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-             </button>
-             <input 
-               type="range" 
-               min="0" max="1" step="0.05"
-               value={masterVolume}
-               onChange={(e) => setMasterVolume(parseFloat(e.target.value))}
-               className="w-24 accent-accent"
-             />
-          </div>
+          {/* Volume Control Removed as it's now in the Pause Menu */}
           <div className="bg-panel border-l-4 border-accent px-5 py-2.5 rounded">
             <div className="text-[12px] uppercase tracking-[1px] text-accent">Current Player</div>
             <div className="text-[24px] font-bold">{activePlayer?.name || 'Player'}</div>

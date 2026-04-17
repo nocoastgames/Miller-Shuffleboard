@@ -7,6 +7,7 @@ import { useStore } from '../../store';
 import { Puck, PuckRef } from './Puck';
 import { Board, BOARD_LENGTH, BOARD_WIDTH, getScorePoint } from './Board';
 import { audioEngine } from '../../lib/audio';
+import { EffectsSystem } from './Effects';
 
 function SpriteIsland({ position, scale = 1 }: { position: [number, number, number], scale?: number }) {
   const texture = useMemo(() => {
@@ -46,10 +47,27 @@ function SeagullSprite({ startZ, speed }: { startZ: number, speed: number }) {
     canvas.height = 512;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.font = '300px serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('🕊️', 256, 256);
+      // Draw a classic "V" shaped distant seagull
+      ctx.strokeStyle = '#ffffff'; // White bird
+      ctx.lineWidth = 24;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      // Drop shadow so it pops against the sky
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 5;
+
+      ctx.beginPath();
+      // Left Wing
+      ctx.moveTo(256, 300); // Start at body center
+      ctx.quadraticCurveTo(170, 180, 80, 240); // Arcing left wing
+      
+      // Right Wing
+      ctx.moveTo(256, 300); // Start at body center again
+      ctx.quadraticCurveTo(342, 180, 432, 240); // Arcing right wing
+      
+      ctx.stroke();
     }
     const tex = new CanvasTexture(canvas);
     tex.anisotropy = 16;
@@ -80,6 +98,7 @@ function SeagullSprite({ startZ, speed }: { startZ: number, speed: number }) {
 }
 
 function CloudSprite({ startX, startZ, scale }: { startX: number, startZ: number, scale: number }) {
+  const groupRef = useRef<Group>(null);
   const [initY] = useState(() => 15 + Math.random() * 5);
   const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
@@ -87,14 +106,14 @@ function CloudSprite({ startX, startZ, scale }: { startX: number, startZ: number
     canvas.height = 1024;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      // Draw super white fluffy clouds with circles
+      // Draw super white fluffy clouds with circles at smaller scale
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.arc(512, 600, 250, 0, Math.PI * 2);
-      ctx.arc(350, 500, 200, 0, Math.PI * 2);
-      ctx.arc(700, 500, 220, 0, Math.PI * 2);
-      ctx.arc(450, 400, 180, 0, Math.PI * 2);
-      ctx.arc(600, 420, 150, 0, Math.PI * 2);
+      ctx.arc(512, 512, 150, 0, Math.PI * 2);
+      ctx.arc(380, 560, 100, 0, Math.PI * 2);
+      ctx.arc(640, 560, 120, 0, Math.PI * 2);
+      ctx.arc(430, 450, 110, 0, Math.PI * 2);
+      ctx.arc(600, 460, 90, 0, Math.PI * 2);
       ctx.fill();
     }
     const tex = new CanvasTexture(canvas);
@@ -102,8 +121,18 @@ function CloudSprite({ startX, startZ, scale }: { startX: number, startZ: number
     return tex;
   }, []);
 
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      groupRef.current.position.x += 1.0 * delta; // Slow drifting
+      // Loop around
+      if (groupRef.current.position.x > 100) {
+        groupRef.current.position.x = -100;
+      }
+    }
+  });
+
   return (
-    <group position={[startX, initY, startZ]}>
+    <group ref={groupRef} position={[startX, initY, startZ]}>
        <Billboard follow={true}>
          <mesh>
            <planeGeometry args={[scale * 10, scale * 10]} />
@@ -136,14 +165,64 @@ function SunSprite() {
   }, []);
 
   return (
-    // Put it way up high and far away to mimic the sky's sun position
-    <group position={[80, 40, 80]}>
+    // Put it way up high, but in the background horizon Z so it stays visible behind clouds
+    <group position={[-10, 20, -60]}>
        <Billboard follow={true}>
          <mesh>
-           <planeGeometry args={[100, 100]} />
+           <planeGeometry args={[80, 80]} />
            <meshBasicMaterial map={texture} transparent depthWrite={false} color="#ffe" />
          </mesh>
        </Billboard>
+    </group>
+  );
+}
+
+function WaveSprite({ startX, startZ, scale, speed = 0.5 }: { startX: number, startZ: number, scale: number, speed?: number }) {
+  const groupRef = useRef<Group>(null);
+  const texture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      // Draw upside-down V shapes for waves (like ^)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; // Semi-transparent white
+      ctx.lineWidth = 16;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      ctx.beginPath();
+      // First wave peak
+      ctx.moveTo(100, 300);
+      ctx.quadraticCurveTo(178, 200, 256, 300);
+      
+      // Second wave peak
+      ctx.moveTo(256, 300);
+      ctx.quadraticCurveTo(334, 200, 412, 300);
+      
+      ctx.stroke();
+    }
+    const tex = new CanvasTexture(canvas);
+    tex.anisotropy = 16;
+    return tex;
+  }, []);
+
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      groupRef.current.position.x += speed * delta;
+      // Loop around
+      if (groupRef.current.position.x > 100) {
+        groupRef.current.position.x = -100;
+      }
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={[startX, -1.9, startZ]} rotation={[-Math.PI / 2, 0, 0]}>
+       <mesh>
+         <planeGeometry args={[scale * 4, scale * 4]} />
+         <meshBasicMaterial map={texture} transparent alphaTest={0.05} depthWrite={false} color="#ffffff" />
+       </mesh>
     </group>
   );
 }
@@ -233,6 +312,7 @@ function GameController({ pucksRefs }: { pucksRefs: React.MutableRefObject<(Puck
             }
 
             const speed = Math.sqrt((vel?.[0] || 0) ** 2 + (vel?.[2] || 0) ** 2);
+            
             // Must be entirely flat or slow to be considered stopped
             if (speed > 0.05) {
                 allStopped = false;
@@ -270,6 +350,9 @@ function GameController({ pucksRefs }: { pucksRefs: React.MutableRefObject<(Puck
               if (pos) {
                  const s = getScorePoint(pos);
                  if (s !== 0) {
+                    if (s === 10) {
+                      useStore.getState().addEffect('confetti', pos);
+                    }
                     let ownerId;
                     if (gameMode === 'single') ownerId = players[i % 2].id;
                     else ownerId = players[currentPlayerIndex % players.length].id;
@@ -292,31 +375,41 @@ function GameController({ pucksRefs }: { pucksRefs: React.MutableRefObject<(Puck
     }
   }, [playState, aimAngle, powerLevel, activePuck]);
 
-  const { currentFrame } = useStore();
+  const { currentFrame, gameState } = useStore();
   
-  // Reset pucks on new round
+  // Reset pucks on new round or game restart
   useEffect(() => {
      pucksRefs.current.forEach(p => {
         if (p) {
            p.hide();
         }
      });
-  }, [currentFrame, pucksRefs]);
+  }, [currentFrame, gameState, currentPlayerIndex, pucksRefs]);
 
   return <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 3, 16]} fov={45} />;
 }
 
 export function Scene() {
   const pucksRefs = useRef<(PuckRef | null)[]>([]);
-  const { gameMode } = useStore();
+  const gameMode = useStore(state => state.gameMode);
 
   const pucksPerRound = gameMode === 'single' ? 8 : 4;
 
+  const randomWaves = useMemo(() => {
+    return Array.from({ length: 40 }).map((_, i) => ({
+      key: `waveA-${i}`,
+      startX: -80 + Math.random() * 160,
+      startZ: -60 + Math.random() * 90,
+      scale: 1.5 + Math.random() * 1.5,
+      speed: 0.5 + Math.random() * 1.5
+    }));
+  }, []);
+
   return (
     <>
-      <color attach="background" args={['#87CEEB']} />
+      <color attach="background" args={['#2563EB']} />
       <Sky sunPosition={[100, 20, 100]} />
-      <fog attach="fog" args={['#87CEEB', 20, 100]} />
+      <fog attach="fog" args={['#2563EB', 20, 100]} />
       
       <SunSprite />
 
@@ -326,21 +419,26 @@ export function Scene() {
       {/* Decorative Ocean Plane */}
       <mesh position={[0, -2, 0]} rotation={[-Math.PI/2, 0, 0]}>
          <planeGeometry args={[500, 500]} />
-         <meshStandardMaterial color="#00bfff" roughness={0.1} metalness={0.6} />
+         <meshStandardMaterial color="#2563EB" roughness={0.1} metalness={0.6} />
       </mesh>
 
       {/* Tropical Sprite Islands scattered around the ocean */}
       <SpriteIsland position={[-15, 0, -10]} scale={1.5} />
       <SpriteIsland position={[20, 0, -15]} scale={2.2} />
-      <SpriteIsland position={[-25, -0.5, 8]} scale={3} />
+      <SpriteIsland position={[-25, -0.5, 8]} scale={2.5} />
       <SpriteIsland position={[18, 0, 12]} scale={1.8} />
       <SpriteIsland position={[-10, 0, -30]} scale={1.2} />
-      <SpriteIsland position={[12, -1, -40]} scale={4} />
+      {/* Background island scale fixed down to 1.5 since emojis scale up huge */}
+      <SpriteIsland position={[12, -1, -40]} scale={1.5} />
 
-      {/* Flocks of Seagulls */}
+      {/* Flocks of Seagulls everywhere */}
       <SeagullSprite startZ={0} speed={4} />
+      <SeagullSprite startZ={-10} speed={4.5} />
       <SeagullSprite startZ={-20} speed={6} />
+      <SeagullSprite startZ={-30} speed={5.5} />
       <SeagullSprite startZ={-40} speed={5} />
+      <SeagullSprite startZ={-50} speed={7} />
+      <SeagullSprite startZ={-60} speed={4.8} />
 
       {/* Moving Fluffy Clouds */}
       <CloudSprite startX={-30} startZ={-10} scale={1.5} />
@@ -348,8 +446,32 @@ export function Scene() {
       <CloudSprite startX={-60} startZ={-50} scale={3} />
       <CloudSprite startX={80} startZ={10} scale={1.2} />
       <CloudSprite startX={40} startZ={-20} scale={1.8} />
+      <CloudSprite startX={-90} startZ={-40} scale={2.5} />
+      <CloudSprite startX={120} startZ={-60} scale={4} />
+
+      {/* Surface Waves - MASSIVE amounts */}
+      {randomWaves.map((w) => (
+         <WaveSprite 
+           key={w.key} 
+           startX={w.startX} 
+           startZ={w.startZ} 
+           scale={w.scale} 
+           speed={w.speed} 
+         />
+      ))}
+      <WaveSprite startX={-10} startZ={0} scale={1.5} speed={0.8} />
+      <WaveSprite startX={20} startZ={-15} scale={2} speed={1.2} />
+      <WaveSprite startX={-30} startZ={20} scale={1.2} speed={0.9} />
+      <WaveSprite startX={40} startZ={10} scale={2.5} speed={1.5} />
+      <WaveSprite startX={-40} startZ={-30} scale={1.8} speed={1.1} />
+      <WaveSprite startX={15} startZ={30} scale={1.4} speed={0.7} />
+      <WaveSprite startX={-50} startZ={5} scale={2} speed={1.0} />
+      <WaveSprite startX={60} startZ={-25} scale={1.6} speed={1.3} />
+      <WaveSprite startX={-70} startZ={-15} scale={2.2} speed={0.9} />
+      <WaveSprite startX={5} startZ={-40} scale={1.7} speed={1.4} />
 
       <AimGuide />
+      <EffectsSystem />
 
       <Physics gravity={[0, -20, 0]} defaultContactMaterial={{ friction: 0.1, restitution: 0.2 }} step={1/120}>
         <GameController pucksRefs={pucksRefs} />
