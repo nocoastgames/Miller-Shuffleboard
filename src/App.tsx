@@ -6,6 +6,7 @@ import { TournamentSetup } from './components/ui/TournamentSetup';
 import { GameplayOverlay } from './components/ui/GameplayOverlay';
 import { Results } from './components/ui/Results';
 import { PauseMenu } from './components/ui/PauseMenu';
+import { RadioDisplay } from './components/ui/RadioDisplay';
 import { useStore } from './store';
 
 export default function App() {
@@ -36,6 +37,8 @@ export default function App() {
       <Canvas shadows>
         <Scene />
       </Canvas>
+
+      <RadioDisplay />
 
       {/* UI Overlays */}
       {gameState === 'menu' && <MainMenu />}

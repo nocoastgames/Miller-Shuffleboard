@@ -92,7 +92,7 @@ export function Board() {
 
   // Script text styling props
   const textProps = {
-    fontStyle: "italic",
+    fontStyle: "italic" as const,
     fontSize: 2,
     color: "white",
     anchorX: "center" as const,

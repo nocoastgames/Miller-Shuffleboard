@@ -62,6 +62,10 @@ interface ShuffleboardStore {
   
   masterVolume: number;
   setMasterVolume: (volume: number) => void;
+  bgMusicVolume: number;
+  setBgMusicVolume: (volume: number) => void;
+  radioStationIdx: number | null;
+  setRadioStationIdx: (idx: number | null) => void;
 
   bumpersEnabled: boolean;
   setBumpersEnabled: (enabled: boolean) => void;
@@ -104,6 +108,7 @@ export const useStore = create<ShuffleboardStore>((set, get) => ({
   })),
 
   currentPlayerIndex: 0,
+  currentPuckIndex: 0,
   playerFrames: {},
   currentFrame: 0,
   
@@ -113,8 +118,14 @@ export const useStore = create<ShuffleboardStore>((set, get) => ({
   sweepSpeed: 1.0,
   setSweepSpeed: (speed) => set({ sweepSpeed: speed }),
   
+  advanceThrow: (scoreThisThrow: number) => set({ scoreThisThrow }),
+  
   masterVolume: 0.5,
   setMasterVolume: (volume) => set({ masterVolume: volume }),
+  bgMusicVolume: 0.5,
+  setBgMusicVolume: (volume) => set({ bgMusicVolume: volume }),
+  radioStationIdx: Math.floor(Math.random() * 10), // Random station 0-9
+  setRadioStationIdx: (idx) => set({ radioStationIdx: idx }),
 
   bumpersEnabled: false,
   setBumpersEnabled: (enabled) => set({ bumpersEnabled: enabled }),

@@ -473,7 +473,7 @@ export function Scene() {
       <AimGuide />
       <EffectsSystem />
 
-      <Physics gravity={[0, -20, 0]} defaultContactMaterial={{ friction: 0.1, restitution: 0.2 }} step={1/120}>
+      <Physics gravity={[0, -20, 0]} defaultContactMaterial={{ friction: 0.1, restitution: 0.2 }}>
         <GameController pucksRefs={pucksRefs} />
         <Board />
         {Array.from({ length: pucksPerRound }).map((_, i) => (
@@ -481,7 +481,7 @@ export function Scene() {
             key={i} 
             index={i} 
             color={gameMode === 'single' ? (i % 2 === 0 ? '#ee2222' : '#2222ee') : '#ee2222'}
-            ref={el => pucksRefs.current[i] = el}
+            ref={(el) => { if (el) pucksRefs.current[i] = el; }}
           />
         ))}
       </Physics>
