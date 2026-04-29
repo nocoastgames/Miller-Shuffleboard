@@ -15,8 +15,15 @@ export function useCurrentSong(stationId: string | null) {
 
     const fetchSong = async () => {
       try {
+        // Only attempt to fetch metadata for somafm stations
+        const station = STATIONS.find(s => s.id === stationId);
+        if (!station || !station.streamUrl.includes('somafm.com')) {
+          setSong(null);
+          return;
+        }
+
         const response = await fetch(`https://somafm.com/songs/${stationId}.json`);
-        // If cors fails, it fails silently, but let's try our best.
+        // If cors fails, it fails silently
         if (response.ok) {
           const data = await response.json();
           if (data && data.songs && data.songs.length > 0) {
@@ -28,7 +35,8 @@ export function useCurrentSong(stationId: string | null) {
           }
         }
       } catch (err) {
-        console.error("Failed to fetch song info", err);
+        // Silently ignore fetch errors (like CORS or network errors)
+        setSong(null);
       }
     };
 
@@ -126,7 +134,7 @@ function DotMatrixEQ({ active }: { active: boolean }) {
 export function RadioDisplay() {
   const { gameState, radioStationIdx, setRadioStationIdx, bgMusicVolume } = useStore();
   const [lastActivity, setLastActivity] = useState(Date.now());
-  const stationId = radioStationIdx !== null ? STATIONS[radioStationIdx].id : null;
+  const stationId = (radioStationIdx !== null && STATIONS[radioStationIdx]) ? STATIONS[radioStationIdx].id : null;
   const song = useCurrentSong(stationId);
 
   // Sync volume
@@ -136,7 +144,7 @@ export function RadioDisplay() {
 
   // Handle play/stop based on gameState and selected station
   useEffect(() => {
-    if (gameState === 'playing' && radioStationIdx !== null) {
+    if (gameState === 'playing' && radioStationIdx !== null && STATIONS[radioStationIdx]) {
       radioEngine.playStation(radioStationIdx);
     } else {
       radioEngine.stop();
@@ -156,8 +164,8 @@ export function RadioDisplay() {
       if (!isNaN(num) && num >= 0 && num <= 9) {
         setLastActivity(Date.now());
         if (num === 0) {
-          // Map 0 to station 9 (10th station)
-          setRadioStationIdx(9);
+          // Turn off radio
+          setRadioStationIdx(null);
         } else {
           // 1-9 to station indices 0-8
           const targetIdx = num - 1;

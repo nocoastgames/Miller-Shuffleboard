@@ -5,16 +5,15 @@ export interface Station {
 }
 
 export const STATIONS: Station[] = [
-  { id: 'leftcoast', name: 'Left Coast 70s (Yacht Rock)', streamUrl: 'https://ice1.somafm.com/leftcoast-128-mp3' },
-  { id: 'tikitime', name: 'Tiki Time (Beach/Exotica)', streamUrl: 'https://ice1.somafm.com/tikitime-128-mp3' },
+  { id: 'rp_mellow', name: 'Yacht Rock / Mellow', streamUrl: 'https://stream.radioparadise.com/mellow-128' },
+  { id: 'rp_world', name: 'Caribbean / Reggae', streamUrl: 'https://stream.radioparadise.com/world-128' },
+  { id: 'beatblender', name: 'Beat Blender (Beach)', streamUrl: 'https://ice1.somafm.com/beatblender-128-mp3' },
+  { id: 'groovesalad', name: 'Groove Salad (Chill)', streamUrl: 'https://ice1.somafm.com/groovesalad-128-mp3' },
   { id: 'illstreet', name: 'Illinois St Lounge', streamUrl: 'https://ice1.somafm.com/illstreet-128-mp3' },
   { id: 'secretagent', name: 'Secret Agent (Lounge)', streamUrl: 'https://ice1.somafm.com/secretagent-128-mp3' },
-  { id: 'caribbean', name: 'Caribbean Vibes', streamUrl: 'https://stream.zeno.fm/4pms5wqf7xquv' },
-  { id: 'bobmarley', name: 'Bob Marley Radio', streamUrl: 'https://stream.zeno.fm/3h69fhmg4zruv' },
-  { id: 'radioparadise_mellow', name: 'RP Mellow Mix', streamUrl: 'https://stream.radioparadise.com/mellow-128' },
-  { id: 'radioparadise_world', name: 'RP World Mix', streamUrl: 'https://stream.radioparadise.com/world-128' },
-  { id: 'groovesalad', name: 'Groove Salad (Chill)', streamUrl: 'https://ice1.somafm.com/groovesalad-128-mp3' },
-  { id: 'lush', name: 'Lush (Ambient Lounge)', streamUrl: 'https://ice1.somafm.com/lush-128-mp3' }
+  { id: 'leftcoast', name: 'Jimmy Buffett Vibes', streamUrl: 'https://ice1.somafm.com/leftcoast-128-mp3' },
+  { id: 'u80s', name: '80s Mix', streamUrl: 'https://ice1.somafm.com/u80s-128-mp3' },
+  { id: 'rp_main', name: 'RP Main Mix', streamUrl: 'https://stream.radioparadise.com/mp3-128' }
 ];
 
 class RadioEngine {

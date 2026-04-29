@@ -80,6 +80,9 @@ interface ShuffleboardStore {
   scoreThisThrow: number;
   setScoreThisThrow: (score: number) => void;
 
+  computerDifficulty: 1 | 2 | 3;
+  setComputerDifficulty: (level: 1 | 2 | 3) => void;
+
   effects: GameEffect[];
   addEffect: (type: 'spark' | 'splash' | 'confetti', position: [number, number, number]) => void;
   removeEffect: (id: string) => void;
@@ -138,6 +141,9 @@ export const useStore = create<ShuffleboardStore>((set, get) => ({
   setPowerLevel: (power) => set({ powerLevel: power }),
   scoreThisThrow: 0,
   setScoreThisThrow: (score) => set({ scoreThisThrow: score }),
+  
+  computerDifficulty: 2,
+  setComputerDifficulty: (level) => set({ computerDifficulty: level }),
 
   effects: [],
   addEffect: (type, position) => set((state) => ({ 

@@ -6,7 +6,7 @@ import { audioEngine } from '../../lib/audio';
 import { Volume2, VolumeX } from 'lucide-react';
 
 export function GameplayOverlay() {
-  const { playState, setPlayState, aimAngle, setAimAngle, powerLevel, setPowerLevel, sweepSpeed, gameMode, currentFrame, totalRounds, playerFrames, players, currentPlayerIndex, currentPuckIndex, teacherAdvancePending, nextTurnAfterTeacher, masterVolume, setMasterVolume, bumpersEnabled } = useStore();
+  const { playState, setPlayState, aimAngle, setAimAngle, powerLevel, setPowerLevel, sweepSpeed, gameMode, currentFrame, totalRounds, playerFrames, players, currentPlayerIndex, currentPuckIndex, teacherAdvancePending, nextTurnAfterTeacher, masterVolume, setMasterVolume, bumpersEnabled, computerDifficulty } = useStore();
   
   const [localAim, setLocalAim] = useState(0);
   const [localPower, setLocalPower] = useState(0);
@@ -43,7 +43,7 @@ export function GameplayOverlay() {
       lastTime = time;
       
       if (playState === 'aiming') {
-        const maxAngle = bumpersEnabled ? 0.2 : 0.35; // Widened sweep angle
+        const maxAngle = bumpersEnabled ? 0.15 : 0.22; // Narrower sweep angle so visual anchor doesn't clip
         let next = localAimRef.current + (delta * 0.4 * sweepSpeed * aimDir.current);
         if (next > maxAngle) {
           next = maxAngle;
@@ -88,21 +88,32 @@ export function GameplayOverlay() {
     let timer: number;
     if (playState === 'aiming') {
       timer = window.setTimeout(() => {
-        const randomAim = (Math.random() - 0.5) * 0.2; // Small random angle
+        let maxAimError = 0.2;
+        if (computerDifficulty === 1) maxAimError = 0.4;
+        else if (computerDifficulty === 2) maxAimError = 0.2;
+        else if (computerDifficulty === 3) maxAimError = 0.05;
+        
+        const randomAim = (Math.random() - 0.5) * maxAimError; // Small random angle based on diff
         setAimAngle(randomAim);
         setPlayState('power');
       }, 1500 / sweepSpeed); 
     } else if (playState === 'power') {
       timer = window.setTimeout(() => {
-        // Random power between 60% and 100%
-        const randomPower = Math.random() * 0.4 + 0.6;
+        let randomPower = 0.8;
+        if (computerDifficulty === 1) {
+          randomPower = Math.random() * 0.6 + 0.4; // 40% to 100%
+        } else if (computerDifficulty === 2) {
+          randomPower = Math.random() * 0.4 + 0.6; // 60% to 100%
+        } else if (computerDifficulty === 3) {
+          randomPower = Math.random() * 0.15 + 0.80; // 80% to 95%
+        }
         setPowerLevel(randomPower);
         setPlayState('rolling');
       }, 1000 / sweepSpeed);
     }
 
     return () => window.clearTimeout(timer);
-  }, [isComputer, playState, teacherAdvancePending, sweepSpeed, setAimAngle, setPlayState, setPowerLevel]);
+  }, [isComputer, playState, teacherAdvancePending, sweepSpeed, computerDifficulty, setAimAngle, setPlayState, setPowerLevel]);
 
 
   const currentScore = activePlayer ? calculateTotalScore(playerFrames[activePlayer.id] || [], totalRounds) : 0;

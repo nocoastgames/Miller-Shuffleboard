@@ -12,6 +12,9 @@ export function TournamentSetup() {
   const totalRounds = useStore(s => s.totalRounds);
   const setTotalRounds = useStore(s => s.setTotalRounds);
   
+  const computerDifficulty = useStore(s => s.computerDifficulty);
+  const setComputerDifficulty = useStore(s => s.setComputerDifficulty);
+  
   const bumpersEnabled = useStore(s => s.bumpersEnabled);
   const setBumpersEnabled = useStore(s => s.setBumpersEnabled);
   
@@ -82,6 +85,24 @@ export function TournamentSetup() {
                 ))}
               </div>
             </div>
+
+            {gameMode === 'single' && (
+              <div className="mt-8 flex flex-col gap-3">
+                <label className="text-xl font-medium">Computer Difficulty</label>
+                <div className="flex gap-2">
+                  {[1, 2, 3].map(level => (
+                    <button
+                      key={level}
+                      type="button"
+                      onClick={() => setComputerDifficulty(level as 1 | 2 | 3)}
+                      className={`flex-1 py-3 rounded font-bold text-xl transition-colors shadow ${computerDifficulty === level ? 'bg-accent text-[#002244]' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                    >
+                       Level {level}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="mt-6 p-4 rounded border border-white/20 shadow-inner bg-[#002244] flex items-center justify-between">
               <label className="text-xl font-medium">Gutter Bumpers (Easier)</label>

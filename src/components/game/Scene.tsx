@@ -262,7 +262,7 @@ function AimGuide() {
     <group ref={groupRef} position={[0, 0.05, 12]}>
       <group ref={pivotRef}>
          <mesh position={[0, 0, -3.5]} rotation={[-Math.PI / 2, 0, Math.PI]}>
-           <planeGeometry args={[4, 4]} />
+           <planeGeometry args={[3.2, 3.2]} />
            <meshBasicMaterial map={texture} transparent alphaTest={0.1} />
          </mesh>
       </group>
@@ -286,14 +286,14 @@ function GameController({ pucksRefs }: { pucksRefs: React.MutableRefObject<(Puck
       if (activePuck) {
         const puckPos = activePuck.getPosition();
         // Don't follow past the penalty zone to keep the whole scoring area in view
-        const targetZ = Math.max(puckPos[2] + 3, -15 + 5);
-        const targetY = 2;
+        const targetZ = Math.max(puckPos[2] + 4, -15 + 6);
+        const targetY = 2.5;
         
-        // Smoothly lerp the camera position
+        // Smoothly lerp the camera position (keep X at 0 so we see the angle)
         cameraRef.current.position.lerp(new Vector3(0, targetY, targetZ), 0.08);
         
-        // Always look rigidly ahead of the camera's CURRENT position to prevent view judder/jiggle
-        cameraRef.current.lookAt(0, 0, cameraRef.current.position.z - 5);
+        // Look ahead of the camera slightly tracking the puck
+        cameraRef.current.lookAt(puckPos[0] * 0.3, 0, Math.max(puckPos[2] - 3, -15));
       }
 
       // Check if rolling is done (all pucks stopped)
@@ -353,9 +353,11 @@ function GameController({ pucksRefs }: { pucksRefs: React.MutableRefObject<(Puck
                     if (s === 10) {
                       useStore.getState().addEffect('confetti', pos);
                     }
-                    let ownerId;
-                    if (gameMode === 'single') ownerId = players[i % 2].id;
-                    else ownerId = players[currentPlayerIndex % players.length].id;
+                    let ownerId = 'unknown';
+                    if (players && players.length > 0) {
+                      if (gameMode === 'single') ownerId = players[i % players.length].id;
+                      else ownerId = players[currentPlayerIndex % players.length].id;
+                    }
                     scores[ownerId] = (scores[ownerId] || 0) + s;
                  }
               }

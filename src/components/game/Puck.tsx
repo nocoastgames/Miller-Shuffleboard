@@ -23,10 +23,11 @@ export const Puck = forwardRef<PuckRef, { index: number, color: string }>(({ ind
     mass: 1.5,
     position: [20 + index * 2, -10, 0], 
     args: [0.28], // Size reduced by 20%
-    material: { friction: 0.04, restitution: 0.8 }, // Adding a little more friction for better sliding feel
-    linearDamping: 0.1, // Increased damping so it eventually grinds to a halt naturally
+    // Restoring default sliding friction since completely blocking rotation fixes the grid-snapping curve
+    material: { friction: 0.04, restitution: 0.8 }, 
+    linearDamping: 0.1, // Restore to original value
     angularDamping: 0.3,
-    angularFactor: [0, 1, 0], // Enforce strictly flat sliding, no pitching or rolling over edges
+    angularFactor: [0, 0, 0], // Completely block rotation to prevent constraint solver curving
     allowSleep: false, // Prevent pucks from falling asleep and becoming uncollidable
     onCollide: (e) => {
       // It's a heavy collision, make a spark!
@@ -111,6 +112,16 @@ export const Puck = forwardRef<PuckRef, { index: number, color: string }>(({ ind
       <mesh position={[0, -0.23, 0]}>
         <cylinderGeometry args={[0.28, 0.28, 0.1, 32]} />
         <meshStandardMaterial color={color} roughness={0.2} metalness={0.1} />
+      </mesh>
+      {/* Inner White Cap */}
+      <mesh position={[0, -0.17, 0]}>
+        <cylinderGeometry args={[0.20, 0.20, 0.03, 32]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.1} metalness={0.1} />
+      </mesh>
+      {/* Small Center Pin */}
+      <mesh position={[0, -0.16, 0]}>
+        <cylinderGeometry args={[0.08, 0.08, 0.03, 16]} />
+        <meshStandardMaterial color={color} roughness={0.4} metalness={0.4} />
       </mesh>
     </group>
   );

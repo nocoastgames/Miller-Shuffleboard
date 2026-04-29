@@ -4,7 +4,7 @@ import { useStore } from '../../store';
 
 export const BOARD_LENGTH = 30;
 export const BOARD_WIDTH = 3;
-export const GUTTER_WIDTH = 1.0; 
+export const GUTTER_WIDTH = 0.8;
 
 function GutterBumpers({ outerLength }: { outerLength: number }) {
   const leftX = -(BOARD_WIDTH / 2) - (GUTTER_WIDTH / 2);
@@ -105,14 +105,14 @@ export function Board() {
       {/* Wood deck style floor */}
       <mesh ref={ref as any} receiveShadow>
         <boxGeometry args={[BOARD_WIDTH, 0.1, BOARD_LENGTH]} />
-        {/* Teak wood color */}
-        <meshStandardMaterial color="#c29f6d" roughness={0.6} />
+        {/* Light maple surface */}
+        <meshStandardMaterial color="#f4dfc4" roughness={0.2} metalness={0.1} />
       </mesh>
 
-      {/* Gutter Floor */}
+      {/* Gutter Floor - Nautical Navy Blue Felt */}
       <mesh position={[0, gutterFloorY, 0]} receiveShadow>
         <boxGeometry args={[outerWidth, 0.1, outerLength]} />
-        <meshStandardMaterial color="#cc2222" roughness={0.8} metalness={0.1} />
+        <meshStandardMaterial color="#1e3a5f" roughness={0.9} metalness={0.1} />
       </mesh>
 
       {/* Puck Waiting Shelf (hidden far away) */}
@@ -126,27 +126,47 @@ export function Board() {
         {/* 7 Zone */}
         <mesh position={[0, 0, -1]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[BOARD_WIDTH, 6]} />
-          <meshStandardMaterial color="#aa22aa" opacity={0.6} transparent />
+          <meshStandardMaterial color="#aa22aa" opacity={0.3} transparent />
         </mesh>
-        <Text position={[0, 0.01, -1]} rotation={[-Math.PI / 2, 0, 0]} {...textProps}>
+        <mesh position={[0, 0.005, 2]} rotation={[-Math.PI / 2, 0, 0]}>
+          {/* Dividing border */}
+          <planeGeometry args={[BOARD_WIDTH, 0.05]} />
+          <meshBasicMaterial color="#401a1a" />
+        </mesh>
+        <Text position={[0, 0.01, -1]} rotation={[-Math.PI / 2, 0, 0]} {...textProps} color="#ffffff" fontStyle="normal" fontWeight="bold">
           7
         </Text>
 
         {/* 8 Zone */}
         <mesh position={[0, 0, -6.5]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[BOARD_WIDTH, 5]} />
-          <meshStandardMaterial color="#2222aa" opacity={0.6} transparent />
+          <meshStandardMaterial color="#2222aa" opacity={0.3} transparent />
         </mesh>
-        <Text position={[0, 0.01, -6.5]} rotation={[-Math.PI / 2, 0, 0]} {...textProps}>
+        <mesh position={[0, 0.005, -4]} rotation={[-Math.PI / 2, 0, 0]}>
+          {/* Dividing border */}
+          <planeGeometry args={[BOARD_WIDTH, 0.05]} />
+          <meshBasicMaterial color="#401a1a" />
+        </mesh>
+        <Text position={[0, 0.01, -6.5]} rotation={[-Math.PI / 2, 0, 0]} {...textProps} color="#ffffff" fontStyle="normal" fontWeight="bold">
           8
         </Text>
 
         {/* 10 Zone */}
         <mesh position={[0, 0, -11]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[BOARD_WIDTH, 4]} />
-          <meshStandardMaterial color="#22aa22" opacity={0.6} transparent />
+          <meshStandardMaterial color="#22aa22" opacity={0.5} transparent />
         </mesh>
-        <Text position={[0, 0.01, -11]} rotation={[-Math.PI / 2, 0, 0]} {...textProps}>
+        <mesh position={[0, 0.005, -9]} rotation={[-Math.PI / 2, 0, 0]}>
+          {/* Dividing border */}
+          <planeGeometry args={[BOARD_WIDTH, 0.05]} />
+          <meshBasicMaterial color="#401a1a" />
+        </mesh>
+        {/* End board border */}
+        <mesh position={[0, 0.005, -13]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[BOARD_WIDTH, 0.05]} />
+          <meshBasicMaterial color="#401a1a" />
+        </mesh>
+        <Text position={[0, 0.01, -11]} rotation={[-Math.PI / 2, 0, 0]} {...textProps} color="#ffffff" fontStyle="normal" fontWeight="bold">
           10
         </Text>
       </group>
@@ -156,19 +176,19 @@ export function Board() {
 
       <mesh position={[-outerWidth/2 - 0.1, 0.1, 0]} receiveShadow castShadow={false}>
         <boxGeometry args={[0.2, 0.6, outerLength]} />
-        <meshStandardMaterial color="#ffffff" />
+        <meshStandardMaterial color="#8b5a2b" roughness={0.3} metalness={0.1} />
       </mesh>
       <mesh position={[outerWidth/2 + 0.1, 0.1, 0]} receiveShadow castShadow={false}>
         <boxGeometry args={[0.2, 0.6, outerLength]} />
-        <meshStandardMaterial color="#ffffff" />
+        <meshStandardMaterial color="#8b5a2b" roughness={0.3} metalness={0.1} />
       </mesh>
       <mesh position={[0, 0.1, -outerLength/2 - 0.1]} receiveShadow castShadow={false}>
         <boxGeometry args={[outerWidth + 0.4, 0.6, 0.2]} />
-        <meshStandardMaterial color="#ffffff" />
+        <meshStandardMaterial color="#8b5a2b" roughness={0.3} metalness={0.1} />
       </mesh>
       <mesh position={[0, 0.1, outerLength/2 + 0.1]} receiveShadow castShadow={false}>
         <boxGeometry args={[outerWidth + 0.4, 0.6, 0.2]} />
-        <meshStandardMaterial color="#ffffff" />
+        <meshStandardMaterial color="#8b5a2b" roughness={0.3} metalness={0.1} />
       </mesh>
     </group>
   );
